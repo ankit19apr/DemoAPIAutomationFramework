@@ -5,7 +5,12 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2:00 PM UTC
+    - cron: '0 14 * * 1,4' # Monday and Thursday at 2:00 pm UTC
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+    
+ 
 jobs:
   build:
 
@@ -24,4 +29,8 @@ jobs:
     - name: Execute Tests with Maven
       run: mvn clean test -Dsuite=suite -X
 
-   
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4.5.0
+      with:
+        name: logs
+        path: logs/
