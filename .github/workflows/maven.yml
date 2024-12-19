@@ -30,6 +30,7 @@ jobs:
       run: mvn clean test -Dsuite=suite -X
 
     - name: Upload a Build Artifact
+      if: always()
       uses: actions/upload-artifact@v4.5.0
       with:
         name: logs
