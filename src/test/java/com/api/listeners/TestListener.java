@@ -14,7 +14,7 @@ public class TestListener implements ITestListener {
     public void onStart(ITestContext context) {
         logger.info("Test Suite Started..!!");
         // Initialize the report with the name of the report file
-        ExtentReportUtility.setupSparkReporter("ExtentReport.html");
+        ExtentReportUtility.setupSparkReporter("report.html");
     }
 
     // This will run before each test method
