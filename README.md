@@ -77,7 +77,7 @@ DemoAPIAutomationFramework
 ├── pom.xml
 └── README.md
 
-🔄 Request Flow
+## 🔄 Request Flow
 
 The framework follows a layered architecture:
 
@@ -115,7 +115,8 @@ POST /api/auth/login
 LoginResponse
       ↓
 TestNG Assertions
-🧩 Service Object Model
+
+## 🧩 Service Object Model
 
 API operations are encapsulated inside service classes instead of directly writing REST Assured requests in every test.
 
@@ -136,7 +137,7 @@ public class AuthService extends BaseService {
 
 Tests can therefore focus on business validation rather than request construction.
 
-📝 Request Models
+## 📝 Request Models
 
 The framework uses POJO classes to represent API request payloads.
 
@@ -147,7 +148,7 @@ LoginRequest loginRequest =
 
 This approach is cleaner and more maintainable than hard-coding JSON strings inside tests.
 
-📦 Response Deserialization
+## 📦 Response Deserialization
 
 API responses are converted into Java objects using Jackson.
 
@@ -162,7 +163,9 @@ loginResponse.getToken();
 loginResponse.getUsername();
 loginResponse.getEmail();
 loginResponse.getRoles();
-🔐 Authentication
+
+
+## 🔐 Authentication
 
 Authentication-related operations are centralized in AuthService.
 
@@ -180,7 +183,9 @@ protected void setAuthToken(String token) {
             "Bearer " + token
     );
 }
-🧪 TestNG
+
+
+## 🧪 TestNG
 
 TestNG is used as the test execution framework.
 
@@ -205,7 +210,9 @@ public void loginTest() {
             200
     );
 }
-📊 Reporting
+
+
+## 📊 Reporting
 
 The framework integrates Extent Reports for test execution reporting.
 
@@ -216,7 +223,9 @@ Passed tests
 Failed tests
 Test descriptions
 Failure details
-📝 Logging
+
+
+## 📝 Logging
 
 The framework uses Log4j2 for application/test logging.
 
@@ -226,7 +235,7 @@ LoggingFilter
 
 This helps with debugging API failures by capturing request and response information.
 
-🔧 Maven
+## 🔧 Maven
 
 The project uses Maven for dependency management and test execution.
 
@@ -234,7 +243,9 @@ Run the complete suite
 mvn clean test -Dsuite=suite
 Run Maven tests
 mvn clean test
-📋 TestNG Suite
+
+
+## 📋 TestNG Suite
 
 The framework supports TestNG Suite XML execution.
 
@@ -245,7 +256,9 @@ suite.xml
 The Maven Surefire Plugin can execute the configured TestNG suite using:
 
 mvn clean test -Dsuite=suite
-⚙️ Prerequisites
+
+
+## ⚙️ Prerequisites
 
 Before running the framework, install:
 
@@ -261,7 +274,9 @@ java -version
 Verify Maven:
 
 mvn -version
-🔗 API
+
+
+## 🔗 API
 
 The framework was originally developed against the demo authentication API used by the accompanying E2E API Automation tutorial.
 
@@ -271,7 +286,7 @@ http://64.227.160.186:8080/swagger-ui/index.html
 
 Note: The demo API is externally hosted and may not always be available. If the server is unavailable, API tests depending on that environment will fail with a connection error.
 
-🔄 CI/CD
+## 🔄 CI/CD
 
 GitHub Actions is configured through:
 
@@ -294,7 +309,10 @@ Maven Build
 Execute TestNG Tests
    ↓
 Generate Reports
-🛠️ Technology Stack
+
+
+## 🛠️ Technology Stack
+
 Technology	Purpose
 Java	Programming Language
 REST Assured	API Automation
@@ -305,7 +323,10 @@ Extent Reports	Test Reporting
 Log4j2	Logging
 Git	Version Control
 GitHub Actions	CI/CD
-🎯 API Testing Coverage
+
+
+
+## 🎯 API Testing Coverage
 
 The framework is designed to support:
 
@@ -319,7 +340,10 @@ Status code validation
 JSON schema/data validation
 API regression testing
 Integration testing
-📈 Future Enhancements
+
+
+
+## 📈 Future Enhancements
 
 Planned improvements include:
 
@@ -337,7 +361,9 @@ Parallel execution
 Enhanced CI/CD reporting
 Allure reporting
 Docker-based execution
-👨‍💻 Author
+
+
+## 👨‍💻 Author
 
 Ankit Sharma
 
@@ -347,7 +373,7 @@ GitHub:
 
 https://github.com/ankit19apr
 
-⭐ Purpose
+## ⭐ Purpose
 
 This project demonstrates practical implementation of a maintainable API automation framework using industry-standard testing practices and modern CI/CD capabilities.
 
