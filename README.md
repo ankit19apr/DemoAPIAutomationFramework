@@ -1,31 +1,42 @@
 # Demo API Automation Framework
 
-A scalable and maintainable **API Test Automation Framework** built using **Java, REST Assured, TestNG, Maven, and GitHub Actions**.
+A professional API automation testing framework built using **Java, REST Assured, TestNG, Maven, Extent Reports, Log4j2, and GitHub Actions**.
 
-The framework follows the **Service Object Model** pattern and provides reusable components for API requests, authentication, request/response serialization, logging, reporting, and CI/CD execution.
+The framework follows a maintainable **Service Object Model** approach and provides reusable components for API request handling, authentication, request/response models, logging, reporting, and CI/CD execution.
 
----
+## 🚀 Tech Stack
 
-## 🚀 Key Features
+| Technology | Purpose |
+|---|---|
+| Java 11+ | Programming language |
+| REST Assured | API automation |
+| TestNG | Test execution and assertions |
+| Maven | Build and dependency management |
+| Jackson | JSON serialization/deserialization |
+| Extent Reports | Test reporting |
+| Log4j2 | Framework logging |
+| GitHub Actions | CI/CD |
+| IntelliJ IDEA | Development IDE |
 
-- REST API automation using **REST Assured**
-- **Java 11+** compatible
-- Test execution using **TestNG**
+## 📌 Framework Features
+
+- REST API automation using REST Assured
 - Service Object Model architecture
-- Reusable `BaseService` for common HTTP operations
-- Authentication service implementation
-- Request and response POJO models
-- JSON serialization/deserialization using **Jackson**
-- Request/response logging using REST Assured filters
-- Custom TestNG listeners
-- **Extent Reports** integration
-- **Log4j2** logging
+- Reusable API request methods
+- Centralized Base Service
+- Authentication service abstraction
+- POJO-based request models
+- POJO-based response models
+- JSON serialization/deserialization
+- Request and response logging
+- Custom REST Assured logging filter
+- TestNG listeners
+- Extent HTML reporting
+- Log4j2 logging
 - Maven-based test execution
+- TestNG suite execution
 - GitHub Actions CI/CD integration
-- Supports execution through TestNG Suite XML
-- Designed for maintainability and scalability
-
----
+- Separation of test logic and API implementation
 
 ## 🏗️ Framework Architecture
 
@@ -42,11 +53,11 @@ DemoAPIAutomationFramework
 │   ├── main
 │   │   └── java
 │   │       └── org.example
+│   │           └── Main.java
 │   │
 │   └── test
 │       ├── java
 │       │   └── com.api
-│       │       │
 │       │       ├── base
 │       │       │   ├── BaseService.java
 │       │       │   ├── AuthService.java
@@ -69,59 +80,95 @@ DemoAPIAutomationFramework
 │       │       │       └── UserProfileResponse.java
 │       │       │
 │       │       ├── tests
-│       │       │   └── LoginApiTest.java
-│       │       │
 │       │       └── utility
+│       │
+│       └── resources
+│           └── log4j2.xml
 │
-├── suite.xml
+├── .gitignore
 ├── pom.xml
-└── README.md
+└── suite.xml
+```
 
-## 🔄 Request Flow
+## 🔧 Design Pattern
 
-The framework follows a layered architecture:
+The framework uses a **Service Object Model**.
 
-Test Class
-    │
-    ▼
-Service Class
-    │
-    ▼
-BaseService
-    │
-    ▼
-REST Assured
-    │
-    ▼
-API Endpoint
-    │
-    ▼
-Response
-    │
-    ▼
-Response POJO
-    │
-    ▼
-Assertions
-Example
-LoginApiTest
-      ↓
-AuthService
-      ↓
-BaseService
-      ↓
-POST /api/auth/login
-      ↓
-LoginResponse
-      ↓
-TestNG Assertions
-
-## 🧩 Service Object Model
-
-API operations are encapsulated inside service classes instead of directly writing REST Assured requests in every test.
+Instead of writing REST Assured request implementation directly inside every test, API operations are encapsulated inside service classes.
 
 Example:
 
+```java
+AuthService authService = new AuthService();
+Response response = authService.login(loginRequest);
+```
+
+The test focuses on **what needs to be tested**, while the service class handles **how the API request is created and executed**.
+
+## 🔹 BaseService
+
+`BaseService` is the core abstraction layer of the framework.
+
+It is responsible for:
+
+- Base URL configuration
+- Creating REST Assured request specifications
+- GET requests
+- POST requests
+- PUT requests
+- Authentication headers
+- Common request configuration
+- Logging filters
+
+Example:
+
+```java
+public class BaseService {
+
+    private static final String BASE_URL =
+            "http://64.227.160.186:8080";
+
+    private RequestSpecification requestSpecification;
+
+    public BaseService() {
+        requestSpecification =
+                RestAssured.given().baseUri(BASE_URL);
+    }
+
+    protected Response getRequest(String endPoint) {
+        return requestSpecification.get(endPoint);
+    }
+
+    protected Response postRequest(Object body, String endPoint) {
+        return requestSpecification
+                .contentType(ContentType.JSON)
+                .body(body)
+                .post(endPoint);
+    }
+
+    protected Response putRequest(Object body, String endPoint) {
+        return requestSpecification
+                .contentType(ContentType.JSON)
+                .body(body)
+                .put(endPoint);
+    }
+
+    protected void setAuthToken(String token) {
+        requestSpecification.header(
+                "Authorization",
+                "Bearer " + token
+        );
+    }
+}
+```
+
+## 🔐 Authentication Service
+
+`AuthService` contains authentication-related API operations.
+
+Example:
+
+```java
 public class AuthService extends BaseService {
 
     private static final String BASE_PATH = "/api/auth/";
@@ -133,71 +180,94 @@ public class AuthService extends BaseService {
     public Response signUp(SignupRequest body) {
         return postRequest(body, BASE_PATH + "signup");
     }
+
+    public Response forgotPassword(String emailAddress) {
+
+        HashMap<String, String> body =
+                new HashMap<>();
+
+        body.put("email", emailAddress);
+
+        return postRequest(
+                body,
+                BASE_PATH + "forgot-password"
+        );
+    }
 }
+```
 
-Tests can therefore focus on business validation rather than request construction.
-
-## 📝 Request Models
+## 📦 Request Models
 
 The framework uses POJO classes to represent API request payloads.
 
 Example:
 
+```java
 LoginRequest loginRequest =
-        new LoginRequest("uday1234", "uday1234");
+        new LoginRequest(
+                "username",
+                "password"
+        );
+```
 
-This approach is cleaner and more maintainable than hard-coding JSON strings inside tests.
+This avoids maintaining large JSON strings directly inside test cases.
 
-## 📦 Response Deserialization
+Instead of:
 
-API responses are converted into Java objects using Jackson.
+```java
+.body(
+    "{\"username\":\"user\",\"password\":\"password\"}"
+)
+```
+
+the framework can use:
+
+```java
+.body(loginRequest)
+```
+
+REST Assured and Jackson handle serialization.
+
+## 📥 Response Models
+
+API responses are deserialized into Java objects.
 
 Example:
 
+```java
 LoginResponse loginResponse =
         response.as(LoginResponse.class);
+```
 
-The test can then access individual response attributes:
+Response fields can then be accessed through Java methods:
 
+```java
 loginResponse.getToken();
-loginResponse.getUsername();
 loginResponse.getEmail();
+loginResponse.getId();
+loginResponse.getType();
+loginResponse.getUsername();
 loginResponse.getRoles();
+```
 
+This provides structured and type-safe access to API responses.
 
-## 🔐 Authentication
+## 🧪 Example API Test
 
-Authentication-related operations are centralized in AuthService.
+Example login test:
 
-Current examples include:
-
-Login
-Signup
-Forgot Password
-
-The framework also provides reusable authorization token handling through BaseService.
-
-protected void setAuthToken(String token) {
-    requestSpecification.header(
-            "Authorization",
-            "Bearer " + token
-    );
-}
-
-
-## 🧪 TestNG
-
-TestNG is used as the test execution framework.
-
-Example:
-
+```java
 @Test(description = "Verify if login API is working")
 public void loginTest() {
 
     LoginRequest loginRequest =
-            new LoginRequest("uday1234", "uday1234");
+            new LoginRequest(
+                    "uday1234",
+                    "uday1234"
+            );
 
-    AuthService authService = new AuthService();
+    AuthService authService =
+            new AuthService();
 
     Response response =
             authService.login(loginRequest);
@@ -205,176 +275,462 @@ public void loginTest() {
     LoginResponse loginResponse =
             response.as(LoginResponse.class);
 
+    System.out.println(
+            response.asPrettyString()
+    );
+
+    System.out.println(
+            loginResponse.getToken()
+    );
+
     Assert.assertEquals(
             response.getStatusCode(),
             200
     );
 }
+```
 
+## 🔄 Request Flow
 
-## 📊 Reporting
+```text
+Test Class
+    |
+    v
+Service Class
+    |
+    v
+BaseService
+    |
+    v
+REST Assured
+    |
+    v
+API Endpoint
+    |
+    v
+Response
+    |
+    v
+Response POJO
+    |
+    v
+Assertions
+```
 
-The framework integrates Extent Reports for test execution reporting.
+For example:
 
-Reports can provide information such as:
-
-Test execution status
-Passed tests
-Failed tests
-Test descriptions
-Failure details
-
+```text
+LoginApiTest
+     ↓
+AuthService.login()
+     ↓
+BaseService.postRequest()
+     ↓
+REST Assured
+     ↓
+/api/auth/login
+     ↓
+Response
+     ↓
+LoginResponse
+     ↓
+TestNG Assertions
+```
 
 ## 📝 Logging
 
-The framework uses Log4j2 for application/test logging.
+The framework includes a custom REST Assured logging filter.
 
-REST Assured request and response logging is handled through a custom filter:
+The filter can be used to capture:
 
-LoggingFilter
+- HTTP method
+- Request URL
+- Request headers
+- Request body
+- Response status
+- Response headers
+- Response body
 
-This helps with debugging API failures by capturing request and response information.
+This makes API failures easier to investigate and debug.
 
-## 🔧 Maven
+## 📊 Test Reporting
 
-The project uses Maven for dependency management and test execution.
+The framework integrates **Extent Reports** for HTML-based test reporting.
 
-Run the complete suite
-mvn clean test -Dsuite=suite
-Run Maven tests
+Reports can provide information such as:
+
+- Passed tests
+- Failed tests
+- Test execution details
+- Failure information
+- Request/response debugging information
+
+## 🪵 Log4j2
+
+Log4j2 is used for framework logging.
+
+Configuration:
+
+```text
+src/test/resources/log4j2.xml
+```
+
+Logs can be maintained separately from test execution output to make troubleshooting easier.
+
+## 🎧 TestNG Listener
+
+The framework includes a custom TestNG listener:
+
+```text
+TestListener.java
+```
+
+The listener can be used for:
+
+- Test start events
+- Test success events
+- Test failure events
+- Test skip events
+- Reporting integration
+- Additional execution logging
+
+Tests can use the listener with:
+
+```java
+@Listeners({
+    com.api.listeners.TestListener.class
+})
+```
+
+## 🧩 Maven Configuration
+
+The framework uses Maven for:
+
+- Dependency management
+- Compilation
+- Test execution
+- CI/CD execution
+
+The project is configured with Java 11 source and target compatibility:
+
+```xml
+<maven.compiler.source>11</maven.compiler.source>
+<maven.compiler.target>11</maven.compiler.target>
+```
+
+The framework targets Java 11 bytecode while Maven may be executed using a newer JDK, provided the configured Maven plugins and dependencies support that JDK.
+
+## ▶️ Running Tests
+
+### Run all tests
+
+```bash
 mvn clean test
+```
 
+### Run a specific TestNG suite
 
-## 📋 TestNG Suite
+The framework supports passing the TestNG suite through a Maven property:
 
-The framework supports TestNG Suite XML execution.
+```bash
+mvn clean test -Dsuite=suite
+```
+
+This executes:
+
+```text
+suite.xml
+```
+
+## 🧪 TestNG Suite
 
 Example:
 
-suite.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 
-The Maven Surefire Plugin can execute the configured TestNG suite using:
+<!DOCTYPE suite SYSTEM
+        "https://testng.org/testng-1.0.dtd">
 
-mvn clean test -Dsuite=suite
+<suite name="API Automation Suite">
 
+    <test name="API Tests">
 
-## ⚙️ Prerequisites
+        <packages>
+            <package name="com.api.tests"/>
+        </packages>
 
-Before running the framework, install:
+    </test>
 
-Java 11 or higher
-Maven 3.9+
-Git
-IntelliJ IDEA or another Java IDE
+</suite>
+```
 
-Verify Java:
-
-java -version
-
-Verify Maven:
-
-mvn -version
-
-
-## 🔗 API
-
-The framework was originally developed against the demo authentication API used by the accompanying E2E API Automation tutorial.
-
-Swagger documentation:
-
-http://64.227.160.186:8080/swagger-ui/index.html
-
-Note: The demo API is externally hosted and may not always be available. If the server is unavailable, API tests depending on that environment will fail with a connection error.
+The suite can be expanded as additional API test packages are added.
 
 ## 🔄 CI/CD
 
-GitHub Actions is configured through:
+The repository contains a GitHub Actions workflow:
 
+```text
 .github/workflows/maven.yml
+```
 
-The framework can be integrated into a CI pipeline to automatically execute API tests whenever changes are pushed to the repository.
+The workflow can execute Maven tests automatically when changes are pushed to the repository.
 
-Typical CI flow:
+Typical CI/CD flow:
 
+```text
+Developer
+    |
+    v
 Git Push
-   ↓
+    |
+    v
+GitHub Repository
+    |
+    v
 GitHub Actions
-   ↓
-Checkout Code
-   ↓
-Setup Java
-   ↓
-Maven Build
-   ↓
-Execute TestNG Tests
-   ↓
-Generate Reports
+    |
+    v
+Maven
+    |
+    v
+TestNG
+    |
+    v
+REST Assured Tests
+    |
+    v
+Test Results
+```
 
+## 🔍 API Coverage
 
-## 🛠️ Technology Stack
+The framework currently demonstrates API automation around areas such as:
 
-Technology	Purpose
-Java	Programming Language
-REST Assured	API Automation
-TestNG	Test Execution
-Maven	Build & Dependency Management
-Jackson	JSON Serialization / Deserialization
-Extent Reports	Test Reporting
-Log4j2	Logging
-Git	Version Control
-GitHub Actions	CI/CD
+### Authentication
 
+- Login
+- Signup
+- Forgot Password
 
+### User/Profile
 
-## 🎯 API Testing Coverage
+- User profile operations
+- Profile request/response handling
 
-The framework is designed to support:
+The framework structure allows additional API services to be added without changing the existing test architecture.
 
-Functional API testing
-Authentication testing
-Positive testing
-Negative testing
-Request validation
-Response validation
-Status code validation
-JSON schema/data validation
-API regression testing
-Integration testing
+## ➕ Adding a New API
 
+### 1. Create request model
 
+```text
+models/requests/CreateUserRequest.java
+```
 
-## 📈 Future Enhancements
+### 2. Create response model
 
-Planned improvements include:
+```text
+models/response/CreateUserResponse.java
+```
 
-Environment-based configuration
-Externalized API base URLs
-Improved request specification management
-Centralized response validation
-Advanced authentication/token management
-Data-driven testing
-Parameterized API tests
-JSON Schema validation
-Contract testing
-Retry mechanism for transient failures
-Parallel execution
-Enhanced CI/CD reporting
-Allure reporting
-Docker-based execution
+### 3. Create service class
 
+```text
+base/UserService.java
+```
+
+### 4. Extend BaseService
+
+```java
+public class UserService extends BaseService {
+}
+```
+
+### 5. Implement the API operation
+
+```java
+public Response createUser(
+        CreateUserRequest request) {
+
+    return postRequest(
+            request,
+            "/api/users"
+    );
+}
+```
+
+### 6. Create the test
+
+```java
+@Test
+public void createUserTest() {
+
+    CreateUserRequest request =
+            new CreateUserRequest();
+
+    UserService userService =
+            new UserService();
+
+    Response response =
+            userService.createUser(request);
+
+    Assert.assertEquals(
+            response.getStatusCode(),
+            201
+    );
+}
+```
+
+## 🎯 Why This Architecture?
+
+The framework separates responsibilities:
+
+```text
+Test Layer
+    ↓
+Business/API Service Layer
+    ↓
+Request/Response Model Layer
+    ↓
+REST Assured Layer
+```
+
+This provides:
+
+- Reusability
+- Maintainability
+- Better separation of concerns
+- Reduced code duplication
+- Easier debugging
+- Easier API expansion
+- Cleaner test classes
+- Better CI/CD integration
+
+## 🛠️ Future Enhancements
+
+The framework can be further enhanced with:
+
+- Environment-based configuration
+- External test data
+- Data-driven testing
+- JSON schema validation
+- Contract testing
+- Database validation
+- API chaining
+- Token management
+- Dynamic test data generation
+- Parallel execution
+- Retry mechanism
+- Allure reporting
+- Docker execution
+- API performance testing
+- OpenAPI/Swagger validation
+- Advanced CI/CD pipelines
+- Secrets management
+- Test execution by environment
+
+## 📁 Configuration Strategy
+
+For production-style usage, environment-specific configuration can be introduced:
+
+```text
+config/
+    dev.properties
+    qa.properties
+    staging.properties
+    prod.properties
+```
+
+The framework can then select the environment during execution:
+
+```bash
+mvn clean test -Denv=qa
+```
+
+This avoids hardcoding environment-specific values throughout the test code.
+
+## 🔒 Security Considerations
+
+Sensitive information should **never be committed to GitHub**.
+
+Avoid storing:
+
+```text
+Passwords
+API keys
+Access tokens
+Client secrets
+Database passwords
+Private credentials
+```
+
+Instead, use:
+
+- Environment variables
+- GitHub Secrets
+- CI/CD secret stores
+- External configuration
+
+Example:
+
+```text
+API_USERNAME
+API_PASSWORD
+API_TOKEN
+```
+
+## 💡 Framework Philosophy
+
+The primary goal of this project is to demonstrate how API automation can evolve from simple REST Assured tests into a maintainable automation framework.
+
+The framework emphasizes:
+
+```text
+Abstraction
+    +
+Reusability
+    +
+Maintainability
+    +
+Logging
+    +
+Reporting
+    +
+CI/CD
+```
 
 ## 👨‍💻 Author
 
-Ankit Sharma
+**Ankit Sharma**
 
-Senior QA / SDET | API Automation | UI Automation | AI & Agent Testing
+QA Automation / SDET Engineer
+
+13+ years of experience in software testing and automation.
+
+Areas of experience include:
+
+- API Automation
+- UI Automation
+- Selenium
+- Playwright
+- REST Assured
+- Java
+- TestNG
+- Cucumber
+- CI/CD
+- GitHub Actions
+- AI/LLM Testing
+- Agent Testing
+- Event-driven testing
+
+## ⭐ Repository
 
 GitHub:
 
-https://github.com/ankit19apr
+https://github.com/ankit19apr/DemoAPIAutomationFramework
 
-## ⭐ Purpose
+## 📜 License
 
-This project demonstrates practical implementation of a maintainable API automation framework using industry-standard testing practices and modern CI/CD capabilities.
-
-The framework is intended for learning, demonstration, portfolio development, and showcasing API automation engineering skills.
+This project is intended for learning, demonstration, and portfolio purposes.
